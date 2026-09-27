@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>犬山ローレライ麦酒</title>
+    <!-- Google Fonts（明朝体）の読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 全体の設定 */
+        :root {
+            --bg-color: #F6F3EB; /* クリーム色 */
+            --text-color: #2b2b2b; /* 墨色（黒） */
+            --accent-color: #8C1C31; /* ワインレッド */
+            --beer-color: #FBECA8; /* 薄いビールの黄色 */
+        }
+
+        body {
+            font-family: 'Noto Serif JP', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- ローディング画面の設定 --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--beer-color);
+            z-index: 9999;
+            overflow: hidden;
+            transition: opacity 1s ease-out; /* ふわっと消える設定 */
+        }
+
+        #loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        /* --- 追加: ローディング画像の設定 --- */
+        .loading-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10; /* 泡よりも上に表示 */
+            opacity: 0; /* 初期状態は透明 */
+            /* 2.5秒かけてフェードイン・フェードアウト */
+            animation: fadeInOutImage 2.5s ease-in-out forwards;
+        }
+
+        .loading-image img {
+            width: 200px; /* 画像のサイズ。お好みで調整してください */
+            height: auto;
+        }
+
+        /* 画像が段々現れて消えるアニメーション */
+        @keyframes fadeInOutImage {
+            0% { opacity: 0; }
+            30% { opacity: 1; }  /* 0.75秒で完全に表示 */
+            70% { opacity: 1; }  /* 1.75秒まで表示を維持 */
+            100% { opacity: 0; } /* 2.5秒で再び透明に */
+        }
+        /* -------------------------- */
+
+        /* ビールの泡のアニメーション */
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: rise infinite ease-in;
+        }
+
+        /* 泡のサイズを小さく、量を増やし、速度を上げる */
+        .bubble:nth-child(1) { width: 25px; height: 25px; left: 10%; animation-duration: 2.5s; animation-delay: 0s; }
+        .bubble:nth-child(2) { width: 15px; height: 15px; left: 22%; animation-duration: 2.0s; animation-delay: 0.8s; }
+        .bubble:nth-child(3) { width: 30px; height: 30px; left: 45%; animation-duration: 3.2s; animation-delay: 0.3s; }
+        .bubble:nth-child(4) { width: 20px; height: 20px; left: 60%; animation-duration: 2.8s; animation-delay: 1.5s; }
+        .bubble:nth-child(5) { width: 10px; height: 10px; left: 75%; animation-duration: 1.8s; animation-delay: 0.1s; }
+        .bubble:nth-child(6) { width: 22px; height: 22px; left: 35%; animation-duration: 2.9s; animation-delay: 1.1s; }
+        .bubble:nth-child(7) { width: 18px; height: 18px; left: 85%; animation-duration: 2.4s; animation-delay: 0.6s; }
+        .bubble:nth-child(8) { width: 12px; height: 12px; left: 15%; animation-duration: 2.1s; animation-delay: 1.2s; }
+        .bubble:nth-child(9) { width: 28px; height: 28px; left: 55%; animation-duration: 3.0s; animation-delay: 0.4s; }
+        .bubble:nth-child(10) { width: 16px; height: 16px; left: 8%; animation-duration: 2.3s; animation-delay: 1.8s; }
+        .bubble:nth-child(11) { width: 24px; height: 24px; left: 70%; animation-duration: 2.7s; animation-delay: 0.9s; }
+        .bubble:nth-child(12) { width: 9px; height: 9px; left: 92%; animation-duration: 1.6s; animation-delay: 0.2s; }
+        .bubble:nth-child(13) { width: 19px; height: 19px; left: 40%; animation-duration: 2.6s; animation-delay: 1.4s; }
+        .bubble:nth-child(14) { width: 14px; height: 14px; left: 82%; animation-duration: 2.2s; animation-delay: 1.7s; }
+        .bubble:nth-child(15) { width: 26px; height: 26px; left: 28%; animation-duration: 3.1s; animation-delay: 0.7s; }
+
+        @keyframes rise {
+            0% {
+                bottom: -50px;
+                transform: translateX(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateX(10px);
+                opacity: 1;
+            }
+            100% {
+                bottom: 110vh;
+                transform: translateX(-10px);
+                opacity: 0;
+            }
+        }
+        /* -------------------------- */
+
+        /* オープニングの店名アニメーション */
+        .hero {
+            height: 40vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shop-title {
+            opacity: 0;
+            font-size: 2.5rem;
+            color: var(--text-color);
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+
+        /* bodyにloadedクラスがついたらアニメーション開始 */
+        body.loaded .shop-title {
+            animation: fadeInTitle 4s ease-out forwards; 
+        }
+
+        @keyframes fadeInTitle {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 店舗情報やボタン（店名の後に出現） */
+        .content-wrapper {
+            opacity: 0;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px 20px 80px;
+        }
+
+        /* 店名出現から2秒遅れて出現 */
+        body.loaded .content-wrapper {
+            animation: fadeInContent 2s ease-out 2s forwards;
+        }
+
+        @keyframes fadeInContent {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 見出しのデザイン */
+        h2 {
+            text-align: center;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        h2::before, h2::after {
+            content: "";
+            width: 40px;
+            height: 1px;
+            background-color: var(--accent-color);
+            opacity: 0.5;
+        }
+
+        /* 店舗情報テーブル */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table th, .info-table td {
+            padding: 20px 10px;
+            border-bottom: 1px solid rgba(140, 28, 49, 0.15);
+        }
+
+        .info-table th {
+            width: 30%;
+            text-align: left;
+            font-weight: normal;
+            color: var(--accent-color);
+        }
+
+        /* Google Mapリンクのデザイン */
+        .map-link {
+            color: var(--accent-color);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            transition: opacity 0.3s;
+        }
+
+        .map-link:hover {
+            opacity: 0.7;
+        }
+
+        /* ボタンエリア（店舗情報の下） */
+        .button-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        /* ボタン共通デザイン */
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 240px;
+            padding: 16px 20px;
+            background-color: var(--accent-color);
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            letter-spacing: 0.1em;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(140, 28, 49, 0.2);
+            box-sizing: border-box;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(140, 28, 49, 0.3);
+        }
+
+        /* 予約ボタン（白抜きデザイン） */
+        .reserve-btn {
+            background-color: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            box-shadow: none;
+        }
+
+        .reserve-btn:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(140, 28, 49, 0.2);
+        }
+
+        /* スマホ向けの微調整 */
+        @media (max-width: 600px) {
+            .shop-title { font-size: 2rem; }
+            .info-table th, .info-table td { display: block; width: 100%; }
+            .info-table th { padding-bottom: 5px; border-bottom: none; }
+            .info-table td { padding-top: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ローディング画面（ビールの泡） -->
+    <div id="loading-screen">
+        <!-- ▼▼ 追加: ここから ▼▼ -->
+        <div class="loading-image">
+            <!-- srcの中身を表示させたい画像のファイルパスに変更してください -->
+            <img src="grass.webp" alt="Loading...">
+        </div>
+        <!-- ▲▲ 追加: ここまで ▲▲ -->
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <!-- オープニング：店名 -->
+    <div class="hero">
+        <h1 class="shop-title">犬山ローレライ麦酒</h1>
+    </div>
+
+    <!-- コンテンツ：店名の後に出現 -->
+    <div class="content-wrapper">
+        
+        <!-- 店舗情報 -->
+        <section class="shop-info">
+            <h2>店舗情報</h2>
+            <table class="info-table">
+                <tr>
+                    <th>営業時間</th>
+                    <td>11:30 - 16:00<br>定休日：木曜日<br>※営業時間・定休日は季節によって変動する場合がございます。</td>
+                </tr>
+                <tr>
+                    <th>ご予約方法</th>
+                    <td>下記ボタンよりWeb予約をご利用ください。</td>
+                </tr>
+                <tr>
+                    <th>決済方法</th>
+                    <td>現金、クレジットカード、QR各種、ID、QUICPay、交通系、楽天Edy</td>
+                </tr>
+                <tr>
+                    <th>席数</th>
+                    <td>25席（テーブル17席、お座敷8席）</td>
+                </tr>
+                <tr>
+                    <th>住所</th>
+                    <td>
+                        <!-- Googleマップへのリンク -->
+                        <a href="https://maps.app.goo.gl/4mLizeK8ZuafsKyeA" target="_blank" class="map-link">
+                            愛知県犬山市北古券7-2
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>アクセス</th>
+                    <td>犬山駅より徒歩15分<br>犬山城より徒歩5分<br>※専用駐車場はございません。近隣のコインパーキングをご利用ください。</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- ボタンエリア -->
+        <div class="button-area">
+            <!-- href="..." の部分にメニューのURLを入れてください -->
+            <a href="https://yoyaku.tabelog.com/yoyaku/net_booking_form/index?rcd=23068587" class="action-btn reserve-btn" target="_blank">ご予約はこちら</a>
+        </div>
+        
+    </div>
+
+    <!-- ローディング制御用スクリプト -->
+    <script>
+        // 読み込み開始時刻を記録
+        const startTime = Date.now();
+        // 最低表示時間（ミリ秒）
+        const minLoadingTime = 2500; 
+
+        window.addEventListener('load', function() {
+            // 実際の読み込みにかかった時間
+            const elapsedTime = Date.now() - startTime;
+            // 足りない分の時間を計算（すでに2秒以上かかっていれば0）
+            const delay = Math.max(0, minLoadingTime - elapsedTime);
+
+            setTimeout(function() {
+                const loadingScreen = document.getElementById('loading-screen');
+                
+                // ローディング画面をフェードアウト
+                loadingScreen.classList.add('fade-out');
+                
+                // フェードアウト開始と同時に、店名のアニメーションをスタート
+                document.body.classList.add('loaded');
+                
+                // 完全に透明になったら裏側から削除（1秒後）
+                setTimeout(function() {
+                    loadingScreen.style.display = 'none';
+                }, 1000);
+
+            }, delay);
+        });
+    </script>
+
+</body>
+</html>
