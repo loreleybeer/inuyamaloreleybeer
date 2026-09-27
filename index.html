@@ -9,6 +9,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
     
+    <!-- ▼▼ 追加: 初回訪問かどうかの判定 ▼▼ -->
+    <script>
+        // セッションストレージを使って2回目以降のアクセスを判定
+        if (sessionStorage.getItem('hasVisited')) {
+            document.documentElement.classList.add('not-first-time');
+        } else {
+            sessionStorage.setItem('hasVisited', 'true');
+        }
+    </script>
+    <!-- ▲▲ 追加: ここまで ▲▲ -->
+
     <style>
         /* 全体の設定 */
         :root {
@@ -45,6 +56,7 @@
             opacity: 0;
             pointer-events: none;
         }
+
         /* --- 追加: ローディング画像の設定 --- */
         .loading-image {
             position: absolute;
@@ -69,6 +81,15 @@
             70% { opacity: 1; }  /* 1.75秒まで表示を維持 */
             100% { opacity: 0; } /* 2.5秒で再び透明に */
         }
+
+        /* ▼▼ 追加: 2回目以降のアニメーション短縮（0.7秒） ▼▼ */
+        html.not-first-time .loading-image {
+            animation-duration: 0.7s;
+        }
+        html.not-first-time #loading-screen {
+            transition: opacity 0.5s ease-out; /* 全体が消える速度も早める */
+        }
+        /* ▲▲ 追加: ここまで ▲▲ */
         /* -------------------------- */
 
         /* ビールの泡のアニメーション */
@@ -268,12 +289,9 @@
 
     <!-- ローディング画面（ビールの泡） -->
     <div id="loading-screen">
-        <!-- ▼▼ 追加: ここから ▼▼ -->
         <div class="loading-image">
-            <!-- srcの中身を表示させたい画像のファイルパスに変更してください -->
             <img src="glass.webp" alt="Loading...">
         </div>
-        <!-- ▲▲ 追加: ここまで ▲▲ -->
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -337,7 +355,6 @@
 
         <!-- ボタンエリア -->
         <div class="button-area">
-            <!-- href="..." の部分にメニューのURLを入れてください -->
             <a href="https://yoyaku.tabelog.com/yoyaku/net_booking_form/index?rcd=23068587" class="action-btn reserve-btn" target="_blank">ご予約はこちら</a>
         </div>
         
@@ -347,13 +364,16 @@
     <script>
         // 読み込み開始時刻を記録
         const startTime = Date.now();
-        // 最低表示時間（ミリ秒）
-        const minLoadingTime = 2500; 
+        
+        // ▼▼ 変更: 2回目以降は最低表示時間を1秒(1000ms)に短縮 ▼▼
+        const isNotFirstTime = document.documentElement.classList.contains('not-first-time');
+        const minLoadingTime = isNotFirstTime ? 1000 : 2500; 
+        // ▲▲ 変更: ここまで ▲▲
 
         window.addEventListener('load', function() {
             // 実際の読み込みにかかった時間
             const elapsedTime = Date.now() - startTime;
-            // 足りない分の時間を計算（すでに2秒以上かかっていれば0）
+            // 足りない分の時間を計算（すでに指定時間以上かかっていれば0）
             const delay = Math.max(0, minLoadingTime - elapsedTime);
 
             setTimeout(function() {
